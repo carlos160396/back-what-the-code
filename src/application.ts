@@ -10,6 +10,7 @@ import {
 } from '@loopback/rest-explorer';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
+import {PasswordHasherBindings} from './keys';
 import {MySequence} from './sequence';
 
 export {ApplicationConfig};
@@ -19,6 +20,8 @@ export class BackWhatTheCodeApplication extends BootMixin(
 ) {
   constructor(options: ApplicationConfig = {}) {
     super(options);
+
+    this.setUpBindings();
 
     // Set up the custom sequence
     this.sequence(MySequence);
@@ -48,5 +51,10 @@ export class BackWhatTheCodeApplication extends BootMixin(
         nested: true,
       },
     };
+  }
+
+  setUpBindings(): void {
+    // Bind bcrypt hash services
+    this.bind(PasswordHasherBindings.ROUNDS).to(10);
   }
 }

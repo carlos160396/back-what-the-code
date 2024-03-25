@@ -59,6 +59,7 @@
     "@loopback/rest-explorer": "^7.0.0",
     "@loopback/security": "^0.11.0",
     "@loopback/service-proxy": "^7.0.0",
+    "bcrypt": "^5.1.1",
     "loopback-connector-postgresql": "^7.0.4",
     "tslib": "^2.0.0"
   },

@@ -1,6 +1,5 @@
-import {authenticate} from '@loopback/authentication';
 import {service} from '@loopback/core';
-import {Filter, FilterExcludingWhere, repository} from '@loopback/repository';
+import {Filter, repository} from '@loopback/repository';
 import {
   get,
   getModelSchemaRef,
@@ -21,11 +20,17 @@ export class UserController {
     public userService: UserService,
   ) {}
 
-  @authenticate('jwt')
+  // @authenticate('jwt')
   @post('/users')
   @response(200, {
     description: 'User model instance',
-    content: {'application/json': {schema: getModelSchemaRef(User)}},
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(User, {
+          exclude: ['password'],
+        }),
+      },
+    },
   })
   async create(
     @requestBody({
@@ -39,7 +44,7 @@ export class UserController {
       },
     })
     user: Omit<User, 'id'>,
-  ): Promise<User> {
+  ): Promise<Partial<User>> {
     return this.userService.create(user);
   }
 
@@ -57,21 +62,5 @@ export class UserController {
   })
   async find(@param.filter(User) filter?: Filter<User>): Promise<User[]> {
     return this.userRepository.find(filter);
-  }
-
-  @get('/users/{id}')
-  @response(200, {
-    description: 'User model instance',
-    content: {
-      'application/json': {
-        schema: getModelSchemaRef(User, {includeRelations: true}),
-      },
-    },
-  })
-  async findById(
-    @param.path.number('id') id: number,
-    @param.filter(User, {exclude: 'where'}) filter?: FilterExcludingWhere<User>,
-  ): Promise<User> {
-    return this.userRepository.findById(id, filter);
   }
 }
