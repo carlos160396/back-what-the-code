@@ -32,8 +32,6 @@ export class FavoritesService {
   }
 
   async delete(id: number): Promise<MessageRes> {
-    console.log('DELETE', id);
-
     await this.favoritesRepository.deleteById(id);
     return {
       message: 'This pokemon is not your favorite',
