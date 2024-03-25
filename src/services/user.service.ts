@@ -45,6 +45,12 @@ export class UserService {
     const isExist = await this.userRepository.findOne({where: {email}});
     return isExist;
   }
+  async findUserId(id: number): Promise<User | null> {
+    const isExist = await this.userRepository.findOne({where: {id}});
+    console.log('ISEXISTID', isExist);
+
+    return isExist;
+  }
 
   /*
    * Add service methods here

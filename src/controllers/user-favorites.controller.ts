@@ -1,30 +1,24 @@
-import {
-  Count,
-  CountSchema,
-  Filter,
-  repository,
-  Where,
-} from '@loopback/repository';
+import {service} from '@loopback/core';
+import {CountSchema, repository} from '@loopback/repository';
 import {
   del,
   get,
   getModelSchemaRef,
-  getWhereSchemaFor,
   param,
-  patch,
   post,
   requestBody,
 } from '@loopback/rest';
-import {
-  User,
-  Favorites,
-} from '../models';
+import {MessageRes} from '../interfaces/Global';
+import {Favorites, User} from '../models';
 import {UserRepository} from '../repositories';
+import {FavoritesService} from '../services';
 
 export class UserFavoritesController {
   constructor(
     @repository(UserRepository) protected userRepository: UserRepository,
-  ) { }
+    @service(FavoritesService)
+    public favoritesService: FavoritesService,
+  ) {}
 
   @get('/users/{id}/favorites', {
     responses: {
@@ -38,11 +32,8 @@ export class UserFavoritesController {
       },
     },
   })
-  async find(
-    @param.path.number('id') id: number,
-    @param.query.object('filter') filter?: Filter<Favorites>,
-  ): Promise<Favorites[]> {
-    return this.userRepository.favorites(id).find(filter);
+  async find(@param.path.number('id') id: number): Promise<Favorites[]> {
+    return this.favoritesService.find(id);
   }
 
   @post('/users/{id}/favorites', {
@@ -56,41 +47,19 @@ export class UserFavoritesController {
   async create(
     @param.path.number('id') id: typeof User.prototype.id,
     @requestBody({
+      required: true,
       content: {
         'application/json': {
           schema: getModelSchemaRef(Favorites, {
             title: 'NewFavoritesInUser',
             exclude: ['id'],
-            optional: ['id_user']
           }),
         },
       },
-    }) favorites: Omit<Favorites, 'id'>,
-  ): Promise<Favorites> {
-    return this.userRepository.favorites(id).create(favorites);
-  }
-
-  @patch('/users/{id}/favorites', {
-    responses: {
-      '200': {
-        description: 'User.Favorites PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
-      },
-    },
-  })
-  async patch(
-    @param.path.number('id') id: number,
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Favorites, {partial: true}),
-        },
-      },
     })
-    favorites: Partial<Favorites>,
-    @param.query.object('where', getWhereSchemaFor(Favorites)) where?: Where<Favorites>,
-  ): Promise<Count> {
-    return this.userRepository.favorites(id).patch(favorites, where);
+    favorites: Omit<Favorites, 'id'>,
+  ): Promise<Favorites> {
+    return this.favoritesService.create(favorites);
   }
 
   @del('/users/{id}/favorites', {
@@ -101,10 +70,7 @@ export class UserFavoritesController {
       },
     },
   })
-  async delete(
-    @param.path.number('id') id: number,
-    @param.query.object('where', getWhereSchemaFor(Favorites)) where?: Where<Favorites>,
-  ): Promise<Count> {
-    return this.userRepository.favorites(id).delete(where);
+  async delete(@param.path.number('id') id: number): Promise<MessageRes> {
+    return this.favoritesService.delete(id);
   }
 }
