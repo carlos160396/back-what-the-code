@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {service} from '@loopback/core';
 import {CountSchema, repository} from '@loopback/repository';
 import {
@@ -8,7 +9,7 @@ import {
   post,
   requestBody,
 } from '@loopback/rest';
-import {MessageRes} from '../interfaces/Global';
+import {MessageRes, MessageResData} from '../interfaces/Global';
 import {Favorites, User} from '../models';
 import {UserRepository} from '../repositories';
 import {FavoritesService} from '../services';
@@ -36,6 +37,7 @@ export class UserFavoritesController {
     return this.favoritesService.find(id);
   }
 
+  @authenticate('jwt')
   @post('/users/{id}/favorites', {
     responses: {
       '200': {
@@ -58,7 +60,7 @@ export class UserFavoritesController {
       },
     })
     favorites: Omit<Favorites, 'id'>,
-  ): Promise<Favorites> {
+  ): Promise<MessageResData> {
     return this.favoritesService.create(favorites);
   }
 

@@ -1,5 +1,7 @@
+import {authenticate} from '@loopback/authentication';
+import {OPERATION_SECURITY_SPEC} from '@loopback/authentication-jwt';
 import {service} from '@loopback/core';
-import {Filter, FilterExcludingWhere, repository} from '@loopback/repository';
+import {Filter, repository} from '@loopback/repository';
 import {
   get,
   getModelSchemaRef,
@@ -8,6 +10,7 @@ import {
   requestBody,
   response,
 } from '@loopback/rest';
+import {MessageResData} from '../interfaces/Global';
 import {Favorites} from '../models';
 import {FavoritesRepository} from '../repositories';
 import {FavoritesService} from '../services';
@@ -37,7 +40,7 @@ export class FavoritesController {
       },
     })
     favorites: Omit<Favorites, 'id'>,
-  ): Promise<Favorites> {
+  ): Promise<MessageResData> {
     return this.favoriteService.create(favorites);
   }
 
@@ -59,8 +62,11 @@ export class FavoritesController {
     return this.favoritesRepository.find(filter);
   }
 
-  @get('/favorites/{id}')
+  @authenticate('jwt')
+  @get('/favorites/{id}/user/{id_user}')
   @response(200, {
+    security: OPERATION_SECURITY_SPEC,
+
     description: 'Favorites model instance',
     content: {
       'application/json': {
@@ -70,9 +76,10 @@ export class FavoritesController {
   })
   async findById(
     @param.path.number('id') id: number,
-    @param.filter(Favorites, {exclude: 'where'})
-    filter?: FilterExcludingWhere<Favorites>,
-  ): Promise<Favorites> {
-    return this.favoritesRepository.findById(id, filter);
+    @param.path.number('id_user') id_user: number,
+  ): Promise<Favorites[]> {
+    console.log('PARAMS', {id, id_user});
+
+    return this.favoriteService.findFavorite(id, id_user);
   }
 }
